@@ -1,0 +1,5 @@
+[05-May-2026 15:55:35 Asia/Kolkata] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'category_id' in 'INSERT INTO' in /home/u603275522/domains/leadmatrix.technocoderz.com/public_html/facebook-leadsync.php:151
+Stack trace:
+#0 /home/u603275522/domains/leadmatrix.technocoderz.com/public_html/facebook-leadsync.php(151): mysqli_prepare()
+#1 {main}
+  thrown in /home/u603275522/domains/leadmatrix.technocoderz.com/public_html/facebook-leadsync.php on line 151
