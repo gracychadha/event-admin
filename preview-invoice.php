@@ -67,6 +67,11 @@ $doc = [
 
 $settings = mysqli_fetch_assoc(mysqli_query($db, "SELECT * FROM login_settings"));
 $favicon = $settings['favicon'] ?? '';
+
+$hasLetterheadBackground = trim((string) ($payload['profile']['letterhead_path'] ?? '')) !== '';
+$sheetStyle = $hasLetterheadBackground
+    ? 'background: transparent; width: 820px; min-height: 1160px;'
+    : 'background:#fff;';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,8 +84,14 @@ $favicon = $settings['favicon'] ?? '';
     <style>
         body { background: #eceff5; padding: 20px; }
         .preview-toolbar { max-width: 820px; margin: 0 auto 14px; display: flex; justify-content: space-between; align-items: center; }
-        .preview-sheet { max-width: 820px; margin: 0 auto; background: #fff; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+        .preview-sheet { max-width: 820px; margin: 0 auto; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,.12); <?php echo $sheetStyle; ?> }
         .preview-errors { max-width: 820px; margin: 0 auto 14px; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .preview-toolbar, .preview-errors { display: none; }
+            .preview-sheet { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -102,7 +113,7 @@ $favicon = $settings['favicon'] ?? '';
     <?php endif; ?>
 
     <div class="preview-sheet">
-        <?php echo invoice_render_layout($doc, false); ?>
+        <?php echo invoice_render_layout($doc, false, false); ?>
     </div>
 </body>
 </html>

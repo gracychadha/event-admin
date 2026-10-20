@@ -69,6 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'footer_text'    => trim($_POST['footer_text'] ?? ''),
             'tax_label'      => trim($_POST['tax_label'] ?? 'GST') ?: 'GST',
             'tax_rate'       => max(0, min(100, (float) ($_POST['tax_rate'] ?? 18))),
+            'bg_margin_top'    => max(0, min(200, (float) ($_POST['bg_margin_top'] ?? 45))),
+            'bg_margin_bottom' => max(0, min(200, (float) ($_POST['bg_margin_bottom'] ?? 20))),
+            'bg_margin_side'   => max(0, min(200, (float) ($_POST['bg_margin_side'] ?? 12))),
             'is_active'      => isset($_POST['is_active']) ? 1 : 0,
         ];
 
@@ -92,15 +95,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "UPDATE company_profiles SET
                     profile_name=?, company_name=?, address=?, city=?, state=?, country=?, postal_code=?,
                     email=?, contact_number=?, gstin=?, logo_path=?, letterhead_path=?, signature_path=?,
-                    signatory_name=?, footer_text=?, tax_label=?, tax_rate=?, is_active=?
+                    signatory_name=?, footer_text=?, tax_label=?, tax_rate=?,
+                    bg_margin_top=?, bg_margin_bottom=?, bg_margin_side=?, is_active=?
                  WHERE id=?"
             );
             $stmt->bind_param(
-                'ssssssssssssssssssi',
+                'ssssssssssssssssssdddi',
                 $fields['profile_name'], $fields['company_name'], $fields['address'], $fields['city'],
                 $fields['state'], $fields['country'], $fields['postal_code'], $fields['email'],
                 $fields['contact_number'], $fields['gstin'], $logoPath, $letterheadPath, $signaturePath,
                 $fields['signatory_name'], $fields['footer_text'], $fields['tax_label'], $fields['tax_rate'],
+                $fields['bg_margin_top'], $fields['bg_margin_bottom'], $fields['bg_margin_side'],
                 $fields['is_active'], $editId
             );
             $stmt->execute();
@@ -111,16 +116,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "INSERT INTO company_profiles
                     (profile_name, company_name, address, city, state, country, postal_code,
                      email, contact_number, gstin, logo_path, letterhead_path, signature_path,
-                     signatory_name, footer_text, tax_label, tax_rate, is_active, is_default, created_by)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                     signatory_name, footer_text, tax_label, tax_rate,
+                     bg_margin_top, bg_margin_bottom, bg_margin_side, is_active, is_default, created_by)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
             );
             $isDefault = 0;
             $stmt->bind_param(
-                'sssssssssssssssssiii',
+                'sssssssssssssssssdddsiii',
                 $fields['profile_name'], $fields['company_name'], $fields['address'], $fields['city'],
                 $fields['state'], $fields['country'], $fields['postal_code'], $fields['email'],
                 $fields['contact_number'], $fields['gstin'], $logoPath, $letterheadPath, $signaturePath,
                 $fields['signatory_name'], $fields['footer_text'], $fields['tax_label'], $fields['tax_rate'],
+                $fields['bg_margin_top'], $fields['bg_margin_bottom'], $fields['bg_margin_side'],
                 $fields['is_active'], $isDefault, $adminId
             );
             $stmt->execute();
@@ -352,6 +359,19 @@ if ($previewProfile) {
                                     <div class="col-md-3 mb-2">
                                         <label class="form-label">Tax Rate (%)</label>
                                         <input type="number" step="0.01" min="0" max="100" name="tax_rate" class="form-control" value="<?php echo htmlspecialchars($edit['tax_rate'] ?? '18.00'); ?>">
+                                    </div>
+                                    <div class="col-12"><hr class="my-2"><small class="text-muted">Letterhead background insets (mm) — space kept around content so it sits inside the letterhead design. Only applies when a letterhead image is set.</small></div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label">Top Inset (mm)</label>
+                                        <input type="number" step="1" min="0" max="200" name="bg_margin_top" class="form-control" value="<?php echo htmlspecialchars($edit['bg_margin_top'] ?? '45'); ?>">
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label">Bottom Inset (mm)</label>
+                                        <input type="number" step="1" min="0" max="200" name="bg_margin_bottom" class="form-control" value="<?php echo htmlspecialchars($edit['bg_margin_bottom'] ?? '20'); ?>">
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label">Side Inset (mm)</label>
+                                        <input type="number" step="1" min="0" max="200" name="bg_margin_side" class="form-control" value="<?php echo htmlspecialchars($edit['bg_margin_side'] ?? '12'); ?>">
                                     </div>
                                     <div class="col-12 mb-2">
                                         <label class="form-label">Footer Text</label>

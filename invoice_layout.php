@@ -16,7 +16,7 @@
  */
 
 if (!function_exists('invoice_render_layout')) {
-    function invoice_render_layout(array $doc, $forPdf = false)
+    function invoice_render_layout(array $doc, $forPdf = false, $fullDocument = true)
     {
         $e = function ($v) {
             return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
@@ -42,6 +42,10 @@ if (!function_exists('invoice_render_layout')) {
         $letterhead     = invoice_asset_url($company['letterhead_path'] ?? '', $forPdf);
         $signature      = invoice_asset_url($company['signature_path'] ?? '', $forPdf);
 
+        // When a letterhead image is present it is used as a full-page background
+        // and the duplicated header block (logo + company details) is suppressed.
+        $hasBackground = ($letterhead !== '');
+
         $taxLabel = $company['tax_label'] ?? 'GST';
         if ($type === 'invoice' && !empty($doc['tax_label'])) {
             $taxLabel = $doc['tax_label'];
@@ -56,14 +60,9 @@ if (!function_exists('invoice_render_layout')) {
 
         // Build header block.
         $headerHtml = '';
-        if ($letterhead !== '') {
-            $headerHtml .= '<div style="text-align:center;margin-bottom:8px;">'
-                . '<img src="' . $e($letterhead) . '" style="max-width:100%;max-height:130px;" alt="Letterhead"></div>';
-            $headerHtml .= '<div style="text-align:center;font-size:11px;color:#333;margin-bottom:4px;">'
-                . '<strong>' . $e($companyName) . '</strong>'
-                . ($companyAddr !== '' ? '<br>' . $e($companyAddr) : '')
-                . ($gstin !== '' ? '<br>GSTIN: ' . $e($gstin) : '')
-                . '</div>';
+        if ($hasBackground) {
+            // Letterhead is rendered as a full-page background; header suppressed.
+            $headerHtml = '';
         } else {
             $logoHtml = $logo !== ''
                 ? '<img src="' . $e($logo) . '" style="max-height:80px;max-width:200px;" alt="Logo">'
@@ -182,9 +181,28 @@ if (!function_exists('invoice_render_layout')) {
 
         $base = $forPdf ? 'font-family:dejavusans,sans-serif;' : 'font-family:Arial,Helvetica,sans-serif;';
 
-        $html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-            body { ' . $base . ' color:#222; font-size:12px; margin:0; padding:0; }
-            .doc { padding:6px; }
+        // Full-page letterhead background + printable-area insets.
+        // mPDF paints a body background across the whole page on every page break,
+        // so there we attach it to body. In the browser preview the fragment is
+        // injected into an existing page, so we attach it to the .doc sheet instead.
+        $topPad    = isset($company['bg_margin_top']) && $company['bg_margin_top'] !== '' ? (float) $company['bg_margin_top'] : 45; // mm
+        $bottomPad = isset($company['bg_margin_bottom']) && $company['bg_margin_bottom'] !== '' ? (float) $company['bg_margin_bottom'] : 20; // mm
+        $sidePad   = isset($company['bg_margin_side']) && $company['bg_margin_side'] !== '' ? (float) $company['bg_margin_side'] : 12; // mm
+        $bgTarget  = $forPdf ? 'body' : '.doc';
+        if ($hasBackground) {
+            $bgUrl = str_replace(['\\', '"'], ['/', '\\"'], $letterhead);
+            $bodyRules = 'body { ' . $base . ' color:#222; font-size:12px; margin:0; padding:0; }'
+                . ' ' . $bgTarget . ' { '
+                . 'background-image:url("' . $bgUrl . '"); '
+                . 'background-repeat:no-repeat; background-position:top left; background-size:100% 100%; }'
+                . ' .doc { padding:' . $topPad . 'mm ' . $sidePad . 'mm ' . $bottomPad . 'mm ' . $sidePad . 'mm; }';
+        } else {
+            $bodyRules = 'body { ' . $base . ' color:#222; font-size:12px; margin:0; padding:0; }'
+                . ' .doc { padding:6px; }';
+        }
+
+        $html = '<style>
+            ' . $bodyRules . '
             h1.title { text-align:center; font-size:19px; letter-spacing:1px; margin:10px 0 4px; color:#00349a; }
             table.items { width:100%; border-collapse:collapse; margin-top:8px; }
             table.items th, table.items td { border:1px solid #999; padding:6px; font-size:11.5px; vertical-align:top; }
@@ -192,7 +210,7 @@ if (!function_exists('invoice_render_layout')) {
             table.meta { width:100%; border-collapse:collapse; margin-top:6px; font-size:12px; }
             .muted { color:#666; }
             .section-title { font-weight:bold; color:#00349a; border-bottom:1px solid #ccc; padding-bottom:2px; margin:10px 0 4px; font-size:12px; }
-        </style></head><body><div class="doc">
+        </style><div class="doc">
             ' . $headerHtml . '
             <h1 class="title">' . $e($title) . '</h1>
             ' . $voidHtml . '
@@ -235,7 +253,13 @@ if (!function_exists('invoice_render_layout')) {
 
             <div style="margin-top:24px;text-align:right;">' . $signatureHtml . '</div>
             ' . ($footerText !== '' ? '<div style="margin-top:18px;border-top:1px solid #ccc;padding-top:6px;font-size:10.5px;color:#555;text-align:center;">' . nl2br($e($footerText)) . '</div>' : '') . '
-        </div></body></html>';
+        </div>';
+
+        if ($fullDocument) {
+            return '<!DOCTYPE html><html><head><meta charset="utf-8">'
+                . '<style>' . ($forPdf ? 'body{margin:0;}' : 'body{margin:0;background:#fff;}') . '</style>'
+                . '</head><body>' . $html . '</body></html>';
+        }
 
         return $html;
     }

@@ -60,6 +60,9 @@ $companySnapshot = json_encode([
     'footer_text'    => $profile['footer_text'] ?? '',
     'tax_label'      => $profile['tax_label'] ?? 'GST',
     'tax_rate'       => $profile['tax_rate'] ?? '0.00',
+    'bg_margin_top'    => $profile['bg_margin_top'] ?? '45.00',
+    'bg_margin_bottom' => $profile['bg_margin_bottom'] ?? '20.00',
+    'bg_margin_side'   => $profile['bg_margin_side'] ?? '12.00',
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 $amountInWords = invoice_amount_in_words($totals['grand_total']);
