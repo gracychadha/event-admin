@@ -26,7 +26,6 @@ $dateFrom  = trim($_GET['date_from'] ?? '');
 $dateTo    = trim($_GET['date_to'] ?? '');
 $page      = max(1, (int) ($_GET['page'] ?? 1));
 $perPage   = 15;
-$offset    = ($page - 1) * $perPage;
 
 $where  = [];
 $params = [];
@@ -66,6 +65,12 @@ $totalRows = (int) $stmt->get_result()->fetch_assoc()['c'];
 $stmt->close();
 $totalPages = max(1, (int) ceil($totalRows / $perPage));
 
+// Clamp an out-of-range page (e.g. stale ?page after filtering) to the last page.
+if ($page > $totalPages) {
+    $page = $totalPages;
+}
+$offset = ($page - 1) * $perPage;
+
 // Fetch page
 $sql = "SELECT i.*, a.username AS created_by_name
         FROM invoices i
@@ -104,7 +109,6 @@ function invoice_query_string($overrides = [])
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="icon" href="<?php echo htmlspecialchars($favicon); ?>" type="image/x-icon">
-    <link rel="stylesheet" href="assets/css/plugins/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <?php echo abstract_swal_css(); ?>
 </head>
@@ -143,6 +147,7 @@ function invoice_query_string($overrides = [])
                     <div class="card">
                         <div class="card-header">
                             <form method="get" action="" class="row">
+                                <input type="hidden" name="page" value="1">
                                 <div class="col-md-4 mb-2">
                                     <input type="text" name="search" class="form-control" placeholder="Search number / customer / email / registration ID" value="<?php echo htmlspecialchars($search); ?>">
                                 </div>
@@ -167,8 +172,8 @@ function invoice_query_string($overrides = [])
                         </div>
 
                         <div class="card-body">
-                            <div class="dt-responsive table-responsive">
-                                <table class="table table-striped table-bordered nowrap">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
                                     <thead>
                                         <tr>
                                             <th>Document No.</th>

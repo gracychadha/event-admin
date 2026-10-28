@@ -73,17 +73,26 @@ $doc = [
 
 $html = invoice_render_layout($doc, true);
 
-$hasLetterheadBackground = trim((string) ($company['letterhead_path'] ?? '')) !== '';
+$backgroundPath = invoice_layout_background_path($doc);
+$hasBackground  = $backgroundPath !== '';
 
 $mpdf = new Mpdf([
     'mode'          => 'utf-8',
     'format'        => 'A4',
-    'margin_left'   => $hasLetterheadBackground ? 0 : 10,
-    'margin_right'  => $hasLetterheadBackground ? 0 : 10,
-    'margin_top'    => $hasLetterheadBackground ? 0 : 12,
-    'margin_bottom' => $hasLetterheadBackground ? 0 : 15,
+    'margin_left'   => $hasBackground ? 0 : 10,
+    'margin_right'  => $hasBackground ? 0 : 10,
+    'margin_top'    => $hasBackground ? 0 : 12,
+    'margin_bottom' => $hasBackground ? 0 : 15,
     'tempDir'       => sys_get_temp_dir(),
 ]);
+
+if ($hasBackground) {
+    // Full-page letterhead behind the content, fitted to the A4 page on every page.
+    $mpdf->SetWatermarkImage($backgroundPath, 1, [210, 297], [0, 0]);
+    $mpdf->watermarkImgBehind = true;
+    $mpdf->showWatermarkImage = true;
+}
+
 $mpdf->SetTitle($invoice['document_number']);
 $mpdf->WriteHTML($html);
 

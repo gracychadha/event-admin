@@ -182,19 +182,24 @@ if (!function_exists('invoice_render_layout')) {
         $base = $forPdf ? 'font-family:dejavusans,sans-serif;' : 'font-family:Arial,Helvetica,sans-serif;';
 
         // Full-page letterhead background + printable-area insets.
-        // mPDF paints a body background across the whole page on every page break,
-        // so there we attach it to body. In the browser preview the fragment is
-        // injected into an existing page, so we attach it to the .doc sheet instead.
+        // Browser preview: the fragment is injected into an existing page, so the
+        //   image is attached to the .doc sheet via CSS.
+        // PDF (mPDF): a CSS body background is sized against the *content* height,
+        //   which stretches/misaligns it. mPDF is instead given the image as a
+        //   page-fitted watermark behind the content (see invoice_layout_background_path()).
         $topPad    = isset($company['bg_margin_top']) && $company['bg_margin_top'] !== '' ? (float) $company['bg_margin_top'] : 45; // mm
         $bottomPad = isset($company['bg_margin_bottom']) && $company['bg_margin_bottom'] !== '' ? (float) $company['bg_margin_bottom'] : 20; // mm
         $sidePad   = isset($company['bg_margin_side']) && $company['bg_margin_side'] !== '' ? (float) $company['bg_margin_side'] : 12; // mm
-        $bgTarget  = $forPdf ? 'body' : '.doc';
-        if ($hasBackground) {
+        if ($hasBackground && !$forPdf) {
             $bgUrl = str_replace(['\\', '"'], ['/', '\\"'], $letterhead);
             $bodyRules = 'body { ' . $base . ' color:#222; font-size:12px; margin:0; padding:0; }'
-                . ' ' . $bgTarget . ' { '
+                . ' .doc { '
                 . 'background-image:url("' . $bgUrl . '"); '
-                . 'background-repeat:no-repeat; background-position:top left; background-size:100% 100%; }'
+                . 'background-repeat:no-repeat; background-position:top left; background-size:100% 100%; '
+                . 'padding:' . $topPad . 'mm ' . $sidePad . 'mm ' . $bottomPad . 'mm ' . $sidePad . 'mm; }';
+        } elseif ($hasBackground) {
+            // PDF: insets only; background is applied by the caller as a watermark.
+            $bodyRules = 'body { ' . $base . ' color:#222; font-size:12px; margin:0; padding:0; }'
                 . ' .doc { padding:' . $topPad . 'mm ' . $sidePad . 'mm ' . $bottomPad . 'mm ' . $sidePad . 'mm; }';
         } else {
             $bodyRules = 'body { ' . $base . ' color:#222; font-size:12px; margin:0; padding:0; }'
@@ -262,5 +267,26 @@ if (!function_exists('invoice_render_layout')) {
         }
 
         return $html;
+    }
+}
+
+if (!function_exists('invoice_layout_background_path')) {
+    /**
+     * Absolute filesystem path of the letterhead background for the given doc,
+     * or '' when none is set. Used by the PDF renderer to place it as a
+     * page-fitted watermark behind the content.
+     */
+    function invoice_layout_background_path(array $doc)
+    {
+        $company = is_array($doc['company'] ?? null) ? $doc['company'] : [];
+        $path    = trim((string) ($company['letterhead_path'] ?? ''));
+        if ($path === '') {
+            return '';
+        }
+        if (preg_match('#^https?://#i', $path)) {
+            return '';
+        }
+        $abs = __DIR__ . '/' . ltrim($path, '/');
+        return is_file($abs) ? $abs : '';
     }
 }
