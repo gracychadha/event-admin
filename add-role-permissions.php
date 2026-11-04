@@ -95,14 +95,14 @@ if (isset($_POST['submit'])) {
 $permissionquery = "SELECT id, title FROM navigation_menus WHERE status = 1"; // Assuming your table is `city_type`
 $permissionresult = mysqli_query($db, $permissionquery);
 $query = "SELECT * FROM login_settings";
-    $settingsResult = mysqli_query($db, $query);
-    $settings = mysqli_fetch_assoc($settingsResult);
+$settingsResult = mysqli_query($db, $query);
+$settings = mysqli_fetch_assoc($settingsResult);
 
-    $logoPath = $settings['backend_panel_logo'];
-    $helpdeskNumber = $settings['helpdesk_no'];
-    $favicon = $settings['favicon'];
-    // echo $favicon;
-    // exit;
+$logoPath = $settings['backend_panel_logo'];
+$helpdeskNumber = $settings['helpdesk_no'];
+$favicon = $settings['favicon'];
+// echo $favicon;
+// exit;
 ?>
 
 <!DOCTYPE html>
@@ -121,7 +121,7 @@ $query = "SELECT * FROM login_settings";
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
 
-    <Style>
+    <style>
         .select2-container--default .select2-selection--multiple .select2-selection__rendered li {
             list-style: none;
             color: #003399;
@@ -132,10 +132,112 @@ $query = "SELECT * FROM login_settings";
         .red-text {
             color: red;
         }
-    </Style>
-    <style>
+
         .red-text {
             color: red;
+        }
+
+        .permission-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .permission-select-box {
+            min-height: 42px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .selected-permissions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .placeholder {
+            color: #999;
+        }
+
+        .permission-tag {
+            background: #e8efff;
+            color: #003399;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .permission-tag span {
+            cursor: pointer;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        .permission-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-top: 5px;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .12);
+        }
+
+        .permission-options.active {
+            display: block;
+        }
+
+        .permission-search {
+            margin: 10px;
+            width: calc(100% - 20px);
+        }
+
+        .permission-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .permission-actions a {
+            color: #003399;
+        }
+
+        .permission-list {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .permission-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .permission-option:hover {
+            background: #f5f7fb;
+        }
+
+        .permission-option input {
+            cursor: pointer;
+        }
+
+        .permission-option.hidden {
+            display: none;
         }
     </style>
 
@@ -194,20 +296,70 @@ $query = "SELECT * FROM login_settings";
                                             </div>
                                         </div>
 
-                                        <div class="col-xl-6 col-lg-6 col-md-4 col-sm-12 col-12">
-    <div class="form-group">
-        Permission Type <span class="red-text">*</span>
-        <select id="multiSelect" name="type[]" multiple="multiple" required class="form-control">
-            <?php
-            while ($row = mysqli_fetch_assoc($permissionresult)) {
-                // Check if the permission is assigned to the role
-                $selected = in_array($row['id'], $assignedPermissions) ? 'selected' : '';
-                echo "<option value='{$row['id']}' $selected>{$row['title']}</option>";
-            }
-            ?>
-        </select>
-    </div>
-</div>
+                                        <!-- <div class="col-xl-6 col-lg-6 col-md-4 col-sm-12 col-12">
+                                            <div class="form-group">
+                                                Permission Type <span class="red-text">*</span>
+                                                <select id="multiSelect" name="type[]" multiple="multiple" required class="form-control">
+                                                    <?php
+                                                    while ($row = mysqli_fetch_assoc($permissionresult)) {
+                                                        // Check if the permission is assigned to the role
+                                                        $selected = in_array($row['id'], $assignedPermissions) ? 'selected' : '';
+                                                        echo "<option value='{$row['id']}' $selected>{$row['title']}</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div> -->
+                                        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    Permission Type <span class="red-text">*</span>
+                                                </label>
+
+                                                <div class="permission-dropdown" id="permissionDropdown">
+
+                                                    <div class="permission-select-box" id="permissionSelectBox">
+                                                        <div class="selected-permissions" id="selectedPermissions">
+                                                            <span class="placeholder">Select permissions</span>
+                                                        </div>
+                                                        <i class="feather icon-chevron-down"></i>
+                                                    </div>
+
+                                                    <div class="permission-options" id="permissionOptions">
+
+                                                        <input type="text"
+                                                            class="form-control permission-search"
+                                                            id="permissionSearch"
+                                                            placeholder="Search permissions...">
+
+                                                        <div class="permission-actions">
+                                                            <span>Available Permissions</span>
+                                                            <a href="javascript:void(0)" id="selectAllPermissions">Select All</a>
+                                                        </div>
+
+                                                        <div class="permission-list">
+                                                            <?php
+                                                            mysqli_data_seek($permissionresult, 0);
+
+                                                            while ($row = mysqli_fetch_assoc($permissionresult)) {
+                                                                $selected = in_array($row['id'], $assignedPermissions) ? 'checked' : '';
+
+                                                                echo '
+                        <label class="permission-option">
+                            <input type="checkbox"
+                                name="type[]"
+                                value="' . htmlspecialchars($row['id']) . '"
+                                ' . $selected . '>
+                            <span>' . htmlspecialchars($row['title']) . '</span>
+                        </label>';
+                                                            }
+                                                            ?>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
 
 
@@ -274,23 +426,17 @@ $query = "SELECT * FROM login_settings";
                 $select.trigger('change.select2');
             });
         });
-    </script>
 
-    <script>
         $(document).ready(function() {
             $("#goldmessage").delay(5000).slideUp(300);
         });
-    </script>
 
-    <script>
         // Function to show the preview button when a file is selected
         function showPreviewButton() {
             var previewBtn = document.getElementById('previewBtn');
             previewBtn.style.display = 'block';
         }
-    </script>
 
-    <script>
         // Function to show the preview modal
         function showPreviewModal() {
             var modal = document.getElementById('imagePreviewModal');
@@ -310,6 +456,99 @@ $query = "SELECT * FROM login_settings";
                 reader.readAsDataURL(file);
             }
         }
+        $(document).ready(function() {
+
+            const dropdown = $('#permissionDropdown');
+            const selectBox = $('#permissionSelectBox');
+            const options = $('#permissionOptions');
+
+            function updateSelectedPermissions() {
+
+                let selected = [];
+
+                $('.permission-option input:checked').each(function() {
+                    selected.push({
+                        id: $(this).val(),
+                        name: $(this).siblings('span').text()
+                    });
+                });
+
+                let html = '';
+
+                if (selected.length === 0) {
+                    html = '<span class="placeholder">Select permissions</span>';
+                } else {
+                    selected.forEach(function(item) {
+                        html += `
+                    <span class="permission-tag">
+                        ${$('<div>').text(item.name).html()}
+                        <span class="remove-permission"
+                              data-id="${item.id}">&times;</span>
+                    </span>`;
+                    });
+                }
+
+                $('#selectedPermissions').html(html);
+
+                let total = $('.permission-option input').length;
+
+                $('#selectAllPermissions').text(
+                    selected.length === total ? 'Deselect All' : 'Select All'
+                );
+            }
+
+            selectBox.on('click', function() {
+                options.toggleClass('active');
+                $('#permissionSearch').focus();
+            });
+
+            $(document).on('click', function(e) {
+                if (!dropdown.is(e.target) && dropdown.has(e.target).length === 0) {
+                    options.removeClass('active');
+                }
+            });
+
+            $(document).on('change', '.permission-option input', function() {
+                updateSelectedPermissions();
+            });
+
+            $('#selectAllPermissions').on('click', function() {
+
+                let checkboxes = $('.permission-option input:visible');
+                let allChecked = checkboxes.length > 0 &&
+                    checkboxes.filter(':checked').length === checkboxes.length;
+
+                checkboxes.prop('checked', !allChecked);
+
+                updateSelectedPermissions();
+            });
+
+            $('#permissionSearch').on('keyup', function() {
+
+                let search = $(this).val().toLowerCase();
+
+                $('.permission-option').each(function() {
+                    let text = $(this).text().toLowerCase();
+
+                    $(this).toggleClass('hidden', !text.includes(search));
+                });
+            });
+
+            $(document).on('click', '.remove-permission', function(e) {
+
+                e.stopPropagation();
+
+                let id = $(this).data('id');
+
+                $('.permission-option input[value="' + id + '"]')
+                    .prop('checked', false);
+
+                updateSelectedPermissions();
+            });
+
+            updateSelectedPermissions();
+
+        });
     </script>
 
 </body>

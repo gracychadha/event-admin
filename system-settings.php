@@ -52,6 +52,14 @@ $Name = isset($copyres['name']) ? $copyres['name'] : '';
 $status = isset($copyres['status']) ? $copyres['status'] : '';
 $link = isset($copyres['link']) ? $copyres['link'] : '';
 
+// Fetch Razorpay payment settings
+$razorpay_result = mysqli_query($db, "SELECT * FROM payment_settings WHERE provider = 'razorpay' LIMIT 1");
+$razorpay = mysqli_fetch_assoc($razorpay_result);
+
+$rp_key_id = isset($razorpay['key_id']) ? $razorpay['key_id'] : '';
+$rp_secret = isset($razorpay['key_secret']) ? $razorpay['key_secret'] : '';
+$rp_status = isset($razorpay['status']) ? $razorpay['status'] : '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['submit1'])) {
         if (!empty($_POST['key']) && !empty($_POST['secret']) && !empty($_POST['status'])) {
@@ -391,6 +399,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         $stmt->close();
+    } elseif (isset($_POST['razorpaysubmit'])) {
+        $rp_key_id_save = mysqli_real_escape_string($db, trim($_POST['rp_key_id'] ?? ''));
+        $rp_secret_save = trim($_POST['rp_secret'] ?? '');
+        $rp_status_save = ($_POST['rp_status'] ?? '') === '1' ? '1' : '0';
+
+        // Keep the stored secret when the field is left blank (avoid forcing re-entry)
+        if ($rp_secret_save === '' && !empty($rp_secret)) {
+            $rp_secret_save = $rp_secret;
+        }
+        $rp_secret_save = mysqli_real_escape_string($db, $rp_secret_save);
+
+        if ($rp_key_id_save !== '' && $rp_secret_save !== '') {
+            $check = $db->query("SELECT id FROM payment_settings WHERE provider = 'razorpay' LIMIT 1");
+            if ($check->num_rows > 0) {
+                $stmt = $db->prepare("UPDATE payment_settings SET key_id = ?, key_secret = ?, status = ? WHERE provider = 'razorpay'");
+                $stmt->bind_param("ssi", $rp_key_id_save, $rp_secret_save, $rp_status_save);
+                $ok = $stmt->execute();
+            } else {
+                $stmt = $db->prepare("INSERT INTO payment_settings (provider, key_id, key_secret, status) VALUES ('razorpay', ?, ?, ?)");
+                $stmt->bind_param("ssi", $rp_key_id_save, $rp_secret_save, $rp_status_save);
+                $ok = $stmt->execute();
+            }
+
+            if ($ok) {
+                $stmt->close();
+                $msg = "
+        <div class='alert alert-success alert-dismissible fade show' role='alert' style='font-size:16px;' id='goldmessage'>
+            <strong><i class='feather icon-check'></i> Success!</strong> Razorpay payment settings updated.
+            <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+                <span aria-hidden='true'>&times;</span>
+            </button>
+        </div>";
+                $rp_key_id = trim($_POST['rp_key_id']);
+                $rp_secret = trim($_POST['rp_secret']);
+                $rp_status = $rp_status_save;
+            } else {
+                $stmt->close();
+                echo "Error: " . $stmt->error;
+            }
+        } else {
+            $msg = "<div class='alert alert-danger alert-dismissible fade show' role='alert' style='font-size:16px;' id='goldmessage'>
+            <strong><i class='feather icon-x'></i> Error!</strong> Razorpay Key ID and Secret are required.
+            <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+                <span aria-hidden='true'>&times;</span>
+            </button>
+        </div>";
+        }
     }
 }
 
@@ -1002,6 +1057,63 @@ $favicon = $settings['favicon'];
                                                 <i class="feather icon-save"></i>&nbsp; Save
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header table-card-header">
+                            <h6><span data-feather="credit-card"></span> Razorpay Payment Settings</h6>
+                            <hr />
+
+                            <div class="alert alert-info">
+                                <strong><i class="feather icon-info"></i> Info:</strong>
+                                Used for delegate registrations on the conference website.
+                                Orders are created from the <strong>server-side final payable amount</strong> and payments are verified
+                                with the Razorpay signature before a registration is marked paid.
+                            </div>
+
+                            <form class="contact-us" method="post" action="" autocomplete="off">
+                                <div class="row">
+                                    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Razorpay Key ID <span class="red-text">*</span></label>
+                                            <input type="text" name="rp_key_id" class="form-control" placeholder="rzp_test_xxxxxxxx / rzp_live_xxxxxxxx"
+                                                value="<?php echo htmlspecialchars($rp_key_id); ?>" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Razorpay Key Secret <span class="red-text">*</span></label>
+                                            <input type="password" name="rp_secret" class="form-control" placeholder="Key Secret"
+                                                value="" autocomplete="new-password">
+                                            <?php if (!empty($rp_secret)): ?>
+                                                <small class="text-muted">Stored securely. Leave blank is not allowed - re-enter the secret to update it.</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                                        <div class="form-group">
+                                            <label class="form-label">Status</label>
+                                            <select name="rp_status" class="form-control">
+                                                <option value="1" <?php echo ($rp_status === '1' || $rp_status === 1) ? 'selected' : ''; ?>>Enable</option>
+                                                <option value="0" <?php echo ($rp_status === '0' || $rp_status === 0) ? 'selected' : ''; ?>>Disable</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                        <button type="submit" class="btn btn-secondary" name="razorpaysubmit" id="submit">
+                                            <i class="feather icon-save"></i>&nbsp; Save Razorpay Settings
+                                        </button>
                                     </div>
                                 </div>
                             </form>

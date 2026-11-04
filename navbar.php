@@ -512,6 +512,68 @@ if ($adminId) {
                         </ul>
                     </li>
                 <?php endif; ?>
+                <!-- Registration Category -->
+                <?php if (
+                    $isAdmin ||
+
+                    in_array('Create Registration Category', $permissions) ||
+                    in_array('Edit Registration Category', $permissions) ||
+                    in_array('All', $permissions)
+                ): ?>
+                    <li class="nav-item pcoded-hasmenu">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
+                            <span class="pcoded-mtext">Registration Category</span>
+                        </a>
+                        <ul class="pcoded-submenu">
+                            <?php if ($isAdmin || in_array('Create Registration Category', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="add-registration-category.php">Add Registration Category</a></li>
+                            <?php endif; ?>
+                            <?php if ($isAdmin || in_array('Edit Registration Category', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="manage-registration-category.php">Manage Registration Category</a></li>
+                            <?php endif; ?>
+
+
+                        </ul>
+                    </li>
+                <?php endif; ?>
+                <!-- Registration Pricing (periods, pricing, options, discounts, registrations) -->
+                <?php if (
+                    $isAdmin ||
+
+                    in_array('Registration Periods', $permissions) ||
+                    in_array('Registration Pricing', $permissions) ||
+                    in_array('Registration Options', $permissions) ||
+                    in_array('Registration Discounts', $permissions) ||
+                    in_array('View Registrations', $permissions) ||
+                    in_array('All', $permissions)
+                ): ?>
+                    <li class="nav-item pcoded-hasmenu">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
+                            <span class="pcoded-mtext">Registration</span>
+                        </a>
+                        <ul class="pcoded-submenu">
+                            <?php if ($isAdmin || in_array('Registration Periods', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="manage-registration-periods.php">Registration Periods</a></li>
+                            <?php endif; ?>
+                            <?php if ($isAdmin || in_array('Registration Pricing', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="registration-pricing.php">Registration Pricing</a></li>
+                            <?php endif; ?>
+                            <?php if ($isAdmin || in_array('Registration Options', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="manage-registration-options.php">Workshop / Add-on Options</a></li>
+                            <?php endif; ?>
+                            <?php if ($isAdmin || in_array('Registration Discounts', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="manage-registration-discounts.php">Special Discounts</a></li>
+                            <?php endif; ?>
+                            <?php if ($isAdmin || in_array('View Registrations', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="manage-registrations.php">Delegate Registrations</a></li>
+                            <?php endif; ?>
+
+
+                        </ul>
+                    </li>
+                <?php endif; ?>
 
 
 

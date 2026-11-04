@@ -101,12 +101,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             $stmt->bind_param(
                 'ssssssssssssssssssdddi',
-                $fields['profile_name'], $fields['company_name'], $fields['address'], $fields['city'],
-                $fields['state'], $fields['country'], $fields['postal_code'], $fields['email'],
-                $fields['contact_number'], $fields['gstin'], $logoPath, $letterheadPath, $signaturePath,
-                $fields['signatory_name'], $fields['footer_text'], $fields['tax_label'], $fields['tax_rate'],
-                $fields['bg_margin_top'], $fields['bg_margin_bottom'], $fields['bg_margin_side'],
-                $fields['is_active'], $editId
+                $fields['profile_name'],
+                $fields['company_name'],
+                $fields['address'],
+                $fields['city'],
+                $fields['state'],
+                $fields['country'],
+                $fields['postal_code'],
+                $fields['email'],
+                $fields['contact_number'],
+                $fields['gstin'],
+                $logoPath,
+                $letterheadPath,
+                $signaturePath,
+                $fields['signatory_name'],
+                $fields['footer_text'],
+                $fields['tax_label'],
+                $fields['tax_rate'],
+                $fields['bg_margin_top'],
+                $fields['bg_margin_bottom'],
+                $fields['bg_margin_side'],
+                $fields['is_active'],
+                $editId
             );
             $stmt->execute();
             $stmt->close();
@@ -123,12 +139,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $isDefault = 0;
             $stmt->bind_param(
                 'sssssssssssssssssdddsiii',
-                $fields['profile_name'], $fields['company_name'], $fields['address'], $fields['city'],
-                $fields['state'], $fields['country'], $fields['postal_code'], $fields['email'],
-                $fields['contact_number'], $fields['gstin'], $logoPath, $letterheadPath, $signaturePath,
-                $fields['signatory_name'], $fields['footer_text'], $fields['tax_label'], $fields['tax_rate'],
-                $fields['bg_margin_top'], $fields['bg_margin_bottom'], $fields['bg_margin_side'],
-                $fields['is_active'], $isDefault, $adminId
+                $fields['profile_name'],
+                $fields['company_name'],
+                $fields['address'],
+                $fields['city'],
+                $fields['state'],
+                $fields['country'],
+                $fields['postal_code'],
+                $fields['email'],
+                $fields['contact_number'],
+                $fields['gstin'],
+                $logoPath,
+                $letterheadPath,
+                $signaturePath,
+                $fields['signatory_name'],
+                $fields['footer_text'],
+                $fields['tax_label'],
+                $fields['tax_rate'],
+                $fields['bg_margin_top'],
+                $fields['bg_margin_bottom'],
+                $fields['bg_margin_side'],
+                $fields['is_active'],
+                $isDefault,
+                $adminId
             );
             $stmt->execute();
             $newId = $stmt->insert_id;
@@ -256,14 +289,48 @@ if ($previewProfile) {
     <link rel="stylesheet" href="assets/css/style.css">
     <?php echo abstract_swal_css(); ?>
     <style>
-        .red-text { color: red; }
-        .preview-frame { border: 1px solid #ddd; background: #fff; padding: 10px; overflow: auto; max-height: 900px; }
+        .red-text {
+            color: red;
+        }
+
+        .items-table td,
+        .items-table th {
+            vertical-align: middle;
+        }
+
+        .items-table input {
+            min-width: 70px;
+        }
+
+        .summary-box {
+            background: #f7f9ff;
+            border: 1px solid #dbe3f5;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid #00349a;
+            font-weight: bold;
+            color: #00349a;
+            margin-top: 6px;
+            padding-top: 6px;
+        }
     </style>
+
 </head>
 
 <body>
     <div class="loader-bg">
-        <div class="loader-track"><div class="loader-fill"></div></div>
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
     </div>
 
     <?php include("header.php"); ?>
@@ -360,7 +427,9 @@ if ($previewProfile) {
                                         <label class="form-label">Tax Rate (%)</label>
                                         <input type="number" step="0.01" min="0" max="100" name="tax_rate" class="form-control" value="<?php echo htmlspecialchars($edit['tax_rate'] ?? '18.00'); ?>">
                                     </div>
-                                    <div class="col-12"><hr class="my-2"><small class="text-muted">Letterhead background insets (mm) — space kept around content so it sits inside the letterhead design. Only applies when a letterhead image is set.</small></div>
+                                    <div class="col-12">
+                                        <hr class="my-2"><small class="text-muted">Letterhead background insets (mm) — space kept around content so it sits inside the letterhead design. Only applies when a letterhead image is set.</small>
+                                    </div>
                                     <div class="col-md-3 mb-2">
                                         <label class="form-label">Top Inset (mm)</label>
                                         <input type="number" step="1" min="0" max="200" name="bg_margin_top" class="form-control" value="<?php echo htmlspecialchars($edit['bg_margin_top'] ?? '45'); ?>">
@@ -419,34 +488,42 @@ if ($previewProfile) {
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead>
-                                        <tr><th>Profile</th><th>GSTIN</th><th>Status</th><th>Actions</th></tr>
+                                        <tr>
+                                            <th>Profile</th>
+                                            <th>GSTIN</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
                                         <?php if (!$profiles): ?>
-                                            <tr><td colspan="4" class="text-center text-muted">No profiles yet.</td></tr>
-                                        <?php else: foreach ($profiles as $p): ?>
                                             <tr>
-                                                <td>
-                                                    <?php echo htmlspecialchars($p['profile_name']); ?>
-                                                    <?php if ($p['is_default']): ?><span class="badge bg-primary">Default</span><?php endif; ?>
-                                                    <br><small class="text-muted"><?php echo htmlspecialchars($p['company_name']); ?></small>
-                                                </td>
-                                                <td><?php echo htmlspecialchars($p['gstin'] ?: '-'); ?></td>
-                                                <td><?php echo $p['is_active'] ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>'; ?></td>
-                                                <td>
-                                                    <a href="invoice-setup.php?edit=<?php echo base64_encode($p['id']); ?>" class="btn btn-sm btn-primary"><i class="feather icon-edit"></i></a>
-                                                    <a href="invoice-setup.php?preview=<?php echo (int) $p['id']; ?>" class="btn btn-sm btn-info"><i class="feather icon-eye"></i></a>
-                                                    <?php if (!$p['is_default']): ?>
-                                                        <form method="post" action="invoice-setup.php" style="display:inline;" onsubmit="return confirm('Set this as the default profile?');">
-                                                            <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                                                            <input type="hidden" name="action" value="set_default">
-                                                            <input type="hidden" name="id" value="<?php echo (int) $p['id']; ?>">
-                                                            <button type="submit" class="btn btn-sm btn-secondary" title="Set default"><i class="feather icon-star"></i></button>
-                                                        </form>
-                                                    <?php endif; ?>
-                                                </td>
+                                                <td colspan="4" class="text-center text-muted">No profiles yet.</td>
                                             </tr>
-                                        <?php endforeach; endif; ?>
+                                            <?php else: foreach ($profiles as $p): ?>
+                                                <tr>
+                                                    <td>
+                                                        <?php echo htmlspecialchars($p['profile_name']); ?>
+                                                        <?php if ($p['is_default']): ?><span class="badge bg-primary">Default</span><?php endif; ?>
+                                                        <br><small class="text-muted"><?php echo htmlspecialchars($p['company_name']); ?></small>
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($p['gstin'] ?: '-'); ?></td>
+                                                    <td><?php echo $p['is_active'] ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>'; ?></td>
+                                                    <td>
+                                                        <a href="invoice-setup.php?edit=<?php echo base64_encode($p['id']); ?>" class="btn btn-sm btn-primary"><i class="feather icon-edit"></i></a>
+                                                        <a href="invoice-setup.php?preview=<?php echo (int) $p['id']; ?>" class="btn btn-sm btn-info"><i class="feather icon-eye"></i></a>
+                                                        <?php if (!$p['is_default']): ?>
+                                                            <form method="post" action="invoice-setup.php" style="display:inline;" onsubmit="return confirm('Set this as the default profile?');">
+                                                                <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
+                                                                <input type="hidden" name="action" value="set_default">
+                                                                <input type="hidden" name="id" value="<?php echo (int) $p['id']; ?>">
+                                                                <button type="submit" class="btn btn-sm btn-secondary" title="Set default"><i class="feather icon-star"></i></button>
+                                                            </form>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                        <?php endforeach;
+                                        endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -474,9 +551,12 @@ if ($previewProfile) {
     <script src="assets/js/vendor-all.min.js"></script>
     <script src="assets/js/plugins/bootstrap.min.js"></script>
     <script src="assets/js/pcoded.min.js"></script>
+    <script src="assets/js/pages/invoice-calc.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <?php echo abstract_swal_js(); ?>
-    <script>feather.replace();</script>
+    <script>
+        feather.replace();
+    </script>
     <?php echo abstract_swal_render(); ?>
 </body>
 
