@@ -559,6 +559,7 @@ if ($adminId) {
                             <?php endif; ?>
                             <?php if ($isAdmin || in_array('Registration Pricing', $permissions) || in_array('All', $permissions)): ?>
                                 <li><a href="registration-pricing.php">Registration Pricing</a></li>
+                                <li><a href="registration-structure.php">Registration Structure</a></li>
                             <?php endif; ?>
                             <?php if ($isAdmin || in_array('Registration Options', $permissions) || in_array('All', $permissions)): ?>
                                 <li><a href="manage-registration-options.php">Workshop / Add-on Options</a></li>

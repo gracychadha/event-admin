@@ -65,11 +65,21 @@ $favicon = $settings['favicon'] ?? '';
     <link rel="icon" href="<?php echo htmlspecialchars($favicon); ?>" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css">
     <?php echo abstract_swal_css(); ?>
+    <style>
+        .table.table-sm td,
+        .table.table-sm th {
+            padding: 0.6rem 2rem;
+            word-wrap: break-word;
+            white-space: break-spaces;
+        }
+    </style>
 </head>
 
 <body>
     <div class="loader-bg">
-        <div class="loader-track"><div class="loader-fill"></div></div>
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
     </div>
 
     <?php include("header.php"); ?>
@@ -101,25 +111,79 @@ $favicon = $settings['favicon'] ?? '';
                         </div>
                         <div class="card-body">
                             <table class="table table-sm table-bordered">
-                                <tr><th style="width:35%;">Document Number</th><td><?php echo htmlspecialchars($invoice['document_number']); ?></td></tr>
-                                <tr><th>Type</th><td><?php echo htmlspecialchars(invoice_type_label($invoice['document_type'])); ?></td></tr>
-                                <tr><th>Date</th><td><?php echo htmlspecialchars(date('d-m-Y', strtotime($invoice['document_date']))); ?></td></tr>
-                                <tr><th>Company Profile</th><td><?php echo htmlspecialchars(($company['profile_name'] ?? '-') . ' — ' . ($company['company_name'] ?? '')); ?></td></tr>
-                                <tr><th>GSTIN</th><td><?php echo htmlspecialchars($company['gstin'] ?? '-'); ?></td></tr>
-                                <tr><th>Customer / Delegate</th><td><?php echo htmlspecialchars($invoice['customer_name']); ?></td></tr>
-                                <tr><th>Email</th><td><?php echo htmlspecialchars($invoice['customer_email'] ?: '-'); ?></td></tr>
-                                <tr><th>Contact</th><td><?php echo htmlspecialchars($invoice['customer_contact'] ?: '-'); ?></td></tr>
-                                <tr><th>Billing Address</th><td><?php echo htmlspecialchars($invoice['billing_address'] ?: '-'); ?></td></tr>
-                                <tr><th>Category</th><td><?php echo htmlspecialchars($invoice['customer_category'] ?: '-'); ?></td></tr>
-                                <tr><th>Event / Conference</th><td><?php echo htmlspecialchars($invoice['event_name'] ?: '-'); ?></td></tr>
-                                <tr><th>Registration / Delegate ID</th><td><?php echo htmlspecialchars($invoice['registration_id'] ?: '-'); ?></td></tr>
-                                <tr><th>Payment Reference / Order ID</th><td><?php echo htmlspecialchars($invoice['payment_reference'] ?: '-'); ?></td></tr>
-                                <tr><th>Payment Mode</th><td><?php echo htmlspecialchars($invoice['payment_mode'] ?: '-'); ?></td></tr>
-                                <tr><th>UTR / Transaction Ref</th><td><?php echo htmlspecialchars($invoice['utr_reference'] ?: '-'); ?></td></tr>
-                                <tr><th>Payment Status</th><td><span class="<?php echo $pstatus['class']; ?>"><?php echo htmlspecialchars($pstatus['label']); ?></span></td></tr>
-                                <tr><th>Amount Received</th><td><?php echo htmlspecialchars(number_format((float) $invoice['amount_received'], 2)); ?></td></tr>
+                                <tr>
+                                    <th style="width:35%;">Document Number</th>
+                                    <td><?php echo htmlspecialchars($invoice['document_number']); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Type</th>
+                                    <td><?php echo htmlspecialchars(invoice_type_label($invoice['document_type'])); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Date</th>
+                                    <td><?php echo htmlspecialchars(date('d-m-Y', strtotime($invoice['document_date']))); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Company Profile</th>
+                                    <td><?php echo htmlspecialchars(($company['profile_name'] ?? '-') . ' — ' . ($company['company_name'] ?? '')); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>GSTIN</th>
+                                    <td><?php echo htmlspecialchars($company['gstin'] ?? '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Customer / Delegate</th>
+                                    <td><?php echo htmlspecialchars($invoice['customer_name']); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td><?php echo htmlspecialchars($invoice['customer_email'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Contact</th>
+                                    <td><?php echo htmlspecialchars($invoice['customer_contact'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Billing Address</th>
+                                    <td><?php echo htmlspecialchars($invoice['billing_address'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Category</th>
+                                    <td><?php echo htmlspecialchars($invoice['customer_category'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Event / Conference</th>
+                                    <td><?php echo htmlspecialchars($invoice['event_name'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Registration / Delegate ID</th>
+                                    <td><?php echo htmlspecialchars($invoice['registration_id'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Reference / Order ID</th>
+                                    <td><?php echo htmlspecialchars($invoice['payment_reference'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Mode</th>
+                                    <td><?php echo htmlspecialchars($invoice['payment_mode'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>UTR / Transaction Ref</th>
+                                    <td><?php echo htmlspecialchars($invoice['utr_reference'] ?: '-'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Status</th>
+                                    <td><span class="<?php echo $pstatus['class']; ?>"><?php echo htmlspecialchars($pstatus['label']); ?></span></td>
+                                </tr>
+                                <tr>
+                                    <th>Amount Received</th>
+                                    <td><?php echo htmlspecialchars(number_format((float) $invoice['amount_received'], 2)); ?></td>
+                                </tr>
                                 <?php if (!empty($invoice['void_reason'])): ?>
-                                    <tr><th>Void Reason</th><td class="text-danger"><?php echo htmlspecialchars($invoice['void_reason']); ?></td></tr>
+                                    <tr>
+                                        <th>Void Reason</th>
+                                        <td class="text-danger"><?php echo htmlspecialchars($invoice['void_reason']); ?></td>
+                                    </tr>
                                 <?php endif; ?>
                             </table>
                         </div>
@@ -133,10 +197,18 @@ $favicon = $settings['favicon'] ?? '';
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead>
-                                        <tr><th>#</th><th>Description</th><th>HSN/SAC</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Description</th>
+                                            <th>HSN/SAC</th>
+                                            <th>Qty</th>
+                                            <th>Rate</th>
+                                            <th>Amount</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                        <?php $i = 1; foreach ($invoice['items'] as $item): ?>
+                                        <?php $i = 1;
+                                        foreach ($invoice['items'] as $item): ?>
                                             <tr>
                                                 <td><?php echo $i++; ?></td>
                                                 <td><?php echo htmlspecialchars($item['description']); ?></td>
@@ -148,15 +220,30 @@ $favicon = $settings['favicon'] ?? '';
                                         <?php endforeach; ?>
                                     </tbody>
                                     <tfoot>
-                                        <tr><th colspan="5" class="text-right">Subtotal</th><td><?php echo htmlspecialchars(number_format((float) $invoice['subtotal'], 2)); ?></td></tr>
+                                        <tr>
+                                            <th colspan="5" class="text-right">Subtotal</th>
+                                            <td><?php echo htmlspecialchars(number_format((float) $invoice['subtotal'], 2)); ?></td>
+                                        </tr>
                                         <?php if ((float) $invoice['discount_amount'] > 0): ?>
-                                            <tr><th colspan="5" class="text-right"><?php echo htmlspecialchars($invoice['discount_label'] ?: 'Discount'); ?> (<?php echo htmlspecialchars(number_format((float) $invoice['discount_percent'], 2)); ?>%)</th><td>- <?php echo htmlspecialchars(number_format((float) $invoice['discount_amount'], 2)); ?></td></tr>
+                                            <tr>
+                                                <th colspan="5" class="text-right"><?php echo htmlspecialchars($invoice['discount_label'] ?: 'Discount'); ?> (<?php echo htmlspecialchars(number_format((float) $invoice['discount_percent'], 2)); ?>%)</th>
+                                                <td>- <?php echo htmlspecialchars(number_format((float) $invoice['discount_amount'], 2)); ?></td>
+                                            </tr>
                                         <?php endif; ?>
-                                        <tr><th colspan="5" class="text-right">Taxable Amount</th><td><?php echo htmlspecialchars(number_format((float) $invoice['taxable_amount'], 2)); ?></td></tr>
+                                        <tr>
+                                            <th colspan="5" class="text-right">Taxable Amount</th>
+                                            <td><?php echo htmlspecialchars(number_format((float) $invoice['taxable_amount'], 2)); ?></td>
+                                        </tr>
                                         <?php if ($invoice['tax_included']): ?>
-                                            <tr><th colspan="5" class="text-right"><?php echo htmlspecialchars($invoice['tax_label']); ?> @ <?php echo htmlspecialchars(number_format((float) $invoice['tax_rate'], 2)); ?>%</th><td><?php echo htmlspecialchars(number_format((float) $invoice['tax_amount'], 2)); ?></td></tr>
+                                            <tr>
+                                                <th colspan="5" class="text-right"><?php echo htmlspecialchars($invoice['tax_label']); ?> @ <?php echo htmlspecialchars(number_format((float) $invoice['tax_rate'], 2)); ?>%</th>
+                                                <td><?php echo htmlspecialchars(number_format((float) $invoice['tax_amount'], 2)); ?></td>
+                                            </tr>
                                         <?php endif; ?>
-                                        <tr><th colspan="5" class="text-right">Grand Total</th><td><strong><?php echo htmlspecialchars(number_format((float) $invoice['grand_total'], 2)); ?></strong></td></tr>
+                                        <tr>
+                                            <th colspan="5" class="text-right">Grand Total</th>
+                                            <td><strong><?php echo htmlspecialchars(number_format((float) $invoice['grand_total'], 2)); ?></strong></td>
+                                        </tr>
                                     </tfoot>
                                 </table>
                             </div>
@@ -178,13 +265,22 @@ $favicon = $settings['favicon'] ?? '';
                     </div>
 
                     <div class="card">
-                        <div class="card-header"><h6><span data-feather="credit-card"></span> Payments</h6></div>
+                        <div class="card-header">
+                            <h6><span data-feather="credit-card"></span> Payments</h6>
+                        </div>
                         <div class="card-body">
                             <?php if (!$payments): ?>
                                 <p class="text-muted mb-0">No payment records.</p>
                             <?php else: ?>
                                 <table class="table table-sm table-bordered">
-                                    <thead><tr><th>Date</th><th>Amount</th><th>Mode</th><th>Reference</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Mode</th>
+                                            <th>Reference</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
                                         <?php foreach ($payments as $pay): ?>
                                             <tr>
@@ -201,7 +297,9 @@ $favicon = $settings['favicon'] ?? '';
                     </div>
 
                     <div class="card">
-                        <div class="card-header"><h6><span data-feather="clock"></span> Audit Trail</h6></div>
+                        <div class="card-header">
+                            <h6><span data-feather="clock"></span> Audit Trail</h6>
+                        </div>
                         <div class="card-body">
                             <?php if (!$audit): ?>
                                 <p class="text-muted mb-0">No audit records.</p>
@@ -232,10 +330,12 @@ $favicon = $settings['favicon'] ?? '';
 
     <script src="assets/js/vendor-all.min.js"></script>
     <script src="assets/js/plugins/bootstrap.min.js"></script>
-    <script src="assets/js/plugins/pcoded.min.js"></script>
+    <script src="assets/js/pcoded.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <?php echo abstract_swal_js(); ?>
-    <script>feather.replace();</script>
+    <script>
+        feather.replace();
+    </script>
     <script>
         function voidInvoice(idEnc, number) {
             Swal.fire({
@@ -248,12 +348,12 @@ $favicon = $settings['favicon'] ?? '';
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Void',
-                inputValidator: function (value) {
+                inputValidator: function(value) {
                     if (!value || !value.trim()) {
                         return 'A reason is required.';
                     }
                 }
-            }).then(function (result) {
+            }).then(function(result) {
                 if (result.isConfirmed) {
                     var f = document.getElementById('voidForm');
                     f.elements['id'].value = idEnc;

@@ -261,7 +261,7 @@ function invoice_query_string($overrides = [])
 
     <script src="assets/js/vendor-all.min.js"></script>
     <script src="assets/js/plugins/bootstrap.min.js"></script>
-    <script src="assets/js/plugins/pcoded.min.js"></script>
+    <script src="assets/js/pcoded.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <?php echo abstract_swal_js(); ?>
     <script>feather.replace();</script>

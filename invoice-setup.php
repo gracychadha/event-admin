@@ -136,9 +136,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      bg_margin_top, bg_margin_bottom, bg_margin_side, is_active, is_default, created_by)
                  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
             );
+
             $isDefault = 0;
+
             $stmt->bind_param(
-                'sssssssssssssssssdddsiii',
+                'ssssssssssssssssddddiii',
                 $fields['profile_name'],
                 $fields['company_name'],
                 $fields['address'],
@@ -163,9 +165,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $isDefault,
                 $adminId
             );
+
             $stmt->execute();
             $newId = $stmt->insert_id;
             $stmt->close();
+
 
             // First profile becomes default automatically.
             $count = (int) $db->query("SELECT COUNT(*) c FROM company_profiles")->fetch_assoc()['c'];
