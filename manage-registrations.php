@@ -70,8 +70,12 @@ $favicon = $settings['favicon'];
                         <div class="col-md-12">
                             <div class="page-header-title">
                                 <h5 class="m-b-10">Delegate Registrations</h5>
+                                  <a href="register.php" class="btn btn-primary">
+                                <i class="feather icon-plus"></i> Add Registration Period
+                            </a>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -148,10 +152,9 @@ $favicon = $settings['favicon'];
 
                                     echo "<td>" . date('d M Y h:i A', strtotime($row['created_at'])) . "</td>";
                                     echo "<td>
-                                        <a href='view-registration.php?id=$encoded_id' class='btn btn-info btn-sm'>
-                                            <i class='feather icon-eye'></i> View
-                                        </a>
-                                    </td>";
+    <a href='view-registration.php?id=$encoded_id' class='btn btn-info btn-sm'><i class='feather icon-eye'></i> View</a>
+    <a href='edit-registration.php?id=$encoded_id' class='btn btn-warning btn-sm'><i class='feather icon-edit-2'></i> Edit</a>
+</td>";
                                     echo "</tr>";
                                 }
 

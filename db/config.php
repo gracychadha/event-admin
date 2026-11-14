@@ -3,7 +3,7 @@
 $host = "127.0.0.1"; 
 $username ="root"; 
 $password = ""; 
-$database = "main_admin";
+$database = "main_db";
 // $host = "127.0.0.1"; 
 // $username ="u927086856_login"; 
 // $password = "|jksQ5Ct5"; 
