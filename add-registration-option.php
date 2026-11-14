@@ -325,7 +325,7 @@ $favicon = $settings['favicon'];
                                                 <option value="Half Day Workshop" <?= ($old['option_name'] ?? '') === 'Half Day Workshop' ? 'selected' : '' ?>>Half Day Workshop</option>
                                                 <option value="Pre Conference CME" <?= ($old['option_name'] ?? '') === 'Pre Conference CME' ? 'selected' : '' ?>>Pre Conference CME</option>
                                             </select>
-                                            <small class="text-muted">Specific workshop ke naam niche "Sub Options" me add karo.</small>
+                                            <small class="text-muted">Add the names of the specific workshops under "Sub-options" below.</small>
                                         </div>
                                     </div>
 
@@ -334,7 +334,7 @@ $favicon = $settings['favicon'];
                                             <label class="form-label">Amount <span class="red-text">*</span></label>
                                             <input type="number" step="0.01" min="0" name="amount" class="form-control"
                                                 value="<?= htmlspecialchars($old['amount'] ?? '') ?>" required>
-                                            <small class="text-muted">0 rakho agar price niche Sub Options me hai</small>
+                                            <small class="text-muted">Set it to 0 if the price is below the options range.</small>
                                         </div>
                                     </div>
 
@@ -406,7 +406,7 @@ $favicon = $settings['favicon'];
                                     <!-- ================= SUB OPTIONS ================= -->
                                     <div class="col-xl-12">
                                         <div class="form-group">
-                                            <label class="form-label">Specific Workshop Names & Prices <span class="text-muted" style="font-weight:400">(Is parent ke under aane wale workshops)</span></label>
+                                            <label class="form-label">Specific Workshop Names & Prices <span class="text-muted" style="font-weight:400">(Workshops falling under this parent)</span></label>
                                             <div class="sub-box">
                                                 <div class="row font-weight-bold mb-2">
                                                     <div class="col-md-8">Workshop / Session Name</div>
@@ -454,7 +454,7 @@ $favicon = $settings['favicon'];
                                                 <button type="button" class="btn btn-outline-secondary btn-sm mt-1" onclick="addSubRow()">
                                                     <i class="feather icon-plus"></i> Add Another Workshop
                                                 </button>
-                                                <small class="text-muted d-block mt-2">Khali rows automatically skip ho jayengi. Currency, GST aur validity upar wale parent se inherit honge.</small>
+                                                <small class="text-muted d-block mt-2">Empty rows will be automatically skipped. Currency, frequency, and validity will be inherited from the parent above.</small>
                                             </div>
                                         </div>
                                     </div>

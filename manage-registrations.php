@@ -70,12 +70,12 @@ $favicon = $settings['favicon'];
                         <div class="col-md-12">
                             <div class="page-header-title">
                                 <h5 class="m-b-10">Delegate Registrations</h5>
-                                  <a href="register.php" class="btn btn-primary">
-                                <i class="feather icon-plus"></i> Add Registration Period
-                            </a>
+                                <a href="register.php" class="btn btn-primary">
+                                    <i class="feather icon-plus"></i> Add Users
+                                </a>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
