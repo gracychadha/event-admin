@@ -1,0 +1,6 @@
+
+2026-11-14 13:04:24 | HTTP:200 | Phone:9107837575742 | Resp:{"success":true,"broadcast_id":"6af84e487c23aaab252d499f","recipients":[{"local_message_id":"bce85be3-2911-475c-af32-bd479ae2b16f","phone_number":"9107837575742","target":"9107837575742","errors":[]}]}
+
+2026-11-14 13:05:36 | HTTP:200 | Phone:9109518257449 | Resp:{"success":true,"broadcast_id":"6af84e906f46c833a260649f","recipients":[{"local_message_id":"f4a8d7d4-64e0-4c9f-b4b7-76cb16466c69","phone_number":"9109518257449","target":"9109518257449","errors":[]}]}
+
+2026-11-14 13:09:22 | HTTP:200 | Phone:9109592806528 | Resp:{"success":true,"broadcast_id":"6af84f73972cd4d87ae0a3fd","recipients":[{"local_message_id":"1b526870-6970-4389-8546-076653d4c19c","phone_number":"9109592806528","target":"9109592806528","errors":[]}]}

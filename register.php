@@ -7,6 +7,70 @@ if (!isset($_SESSION["login_user"])) {
 include("db/config.php");
 include("registration_pricing_helpers.php");
 
+// ==========================================
+// WATI WHATSAPP TEMPLATE HELPER (with full logging)
+// ==========================================
+function sendWatiWhatsAppTemplate($dialCode, $contactNumber, $firstName, $ref, $payable, $currency, $eventDate, $eventVenue, $conferenceName)
+{
+    // Clean phone number
+    $cleanPhone = preg_replace('/[^0-9]/', '', $dialCode . $contactNumber);
+    $cleanPhone = ltrim($cleanPhone, '0');
+
+    // WATI Credentials
+    $apiToken     = 'wati_67bd825c-b791-422b-b038-3ee160a9d6d2.MdKUAxDwy8ix0dhKtRsYChKqaGJqV9MUzhQ_q8guzTls_jbbqXiouvnzlB9aycywEgIqimKm8KFmvMOiaGkrjHNIxGzIv9Z5PaA56lAGT0VIEro4NwCExKgAN9_yw1rO';
+    $templateName = 'registration_confirmation_crm';
+
+    $url = "https://live-mt-server.wati.io/api/ext/v3/messageTemplates/send";
+
+    // Parameters MUST be inside each recipient as custom_params (per WATI v3 OpenAPI schema)
+    $payload = [
+        'template_name'  => $templateName,
+        'broadcast_name' => $templateName,
+        'recipients' => [
+            [
+                'phone_number'  => $cleanPhone,
+                'custom_params' => [
+                    ['name' => '1', 'value' => $firstName],
+                    ['name' => '2', 'value' => $conferenceName],
+                    ['name' => '3', 'value' => $eventDate],
+                    ['name' => '4', 'value' => $eventVenue],
+                    ['name' => '5', 'value' => $ref]
+                ]
+            ]
+        ]
+    ];
+
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false,
+        CURLOPT_CUSTOMREQUEST => "POST",
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_HTTPHEADER => [
+            "accept: application/json",
+            "content-type: application/json",
+            "authorization: Bearer " . $apiToken
+        ],
+    ]);
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
+    // Log for debugging
+    $logFile = __DIR__ . '/wati_v3_log.txt';
+    file_put_contents($logFile, "\n" . date('Y-m-d H:i:s') . " | HTTP:$httpCode | Phone:$cleanPhone | Resp:" . ($response ?: $err) . "\n", FILE_APPEND);
+
+    if ($err || $httpCode !== 200) {
+        return false;
+    }
+    $res = json_decode($response, true);
+    return !empty($res['success']) && empty($res['recipients'][0]['errors']);
+}
 $msg = "";
 $old = $_POST;
 $selectedCategory   = (int)($_POST['category_id'] ?? 0);
@@ -134,7 +198,7 @@ if (isset($_POST['submit_user'])) {
         }
     }
 
-           if (empty($errors)) {
+    if (empty($errors)) {
         $baseFee = $basePrice ? (float)$basePrice['amount'] : 0;
         $fee = $baseFee + $workshopFee;
 
@@ -169,13 +233,13 @@ if (isset($_POST['submit_user'])) {
 
         mysqli_begin_transaction($db);
         try {
-            // 1. Assign ALL Variables (21 total for registered_users)
+            // 1. Assign ALL Variables
             $prefixVal        = $_POST['prefix'] ?? '';
             $middleNameVal    = trim($_POST['middle_name'] ?? '');
             $genderVal        = $_POST['gender'] ?? '';
             $passwordHash     = password_hash($password, PASSWORD_DEFAULT);
             $dialCodeVal      = $_POST['dial_code'] ?? '+91';
-            $companyNameVal   = trim($_POST['company_name'] ?? ''); // <-- ADDED THIS
+            $companyNameVal   = trim($_POST['company_name'] ?? '');
             $accommodationVal = $_POST['accommodation'] ?? 'No';
             $addressTypeVal   = $_POST['address_type'] ?? 'Personal';
             $addressVal       = trim($_POST['address'] ?? '');
@@ -187,7 +251,7 @@ if (isset($_POST['submit_user'])) {
             $emailStatusVal   = $_POST['email_status'] ?? 'Not Verified';
             $userCommentVal   = trim($_POST['user_comment'] ?? '');
 
-            // Insert user (21 columns = 21 placeholders)
+            // 2) Insert user (21 cols, delegate fields baad me assign honge)
             $stmt = mysqli_prepare($db, "INSERT INTO registered_users
                 (prefix, first_name, middle_name, last_name, email, gender, password,
                  dial_code, contact_number, company_name, membership_number, accommodation,
@@ -195,7 +259,7 @@ if (isset($_POST['submit_user'])) {
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             mysqli_stmt_bind_param(
                 $stmt,
-                "ssssssssssssssssssiss", // 20 's' + 1 'i' + 1 's' = 21 chars
+                "ssssssssssssssssssiss",
                 $prefixVal,
                 $firstName,
                 $middleNameVal,
@@ -205,7 +269,7 @@ if (isset($_POST['submit_user'])) {
                 $passwordHash,
                 $dialCodeVal,
                 $contact,
-                $companyNameVal,   // <-- ADDED HERE (10th position)
+                $companyNameVal,
                 $membership,
                 $accommodationVal,
                 $addressTypeVal,
@@ -220,6 +284,17 @@ if (isset($_POST['submit_user'])) {
             );
             mysqli_stmt_execute($stmt);
             $userId = mysqli_insert_id($db);
+            mysqli_stmt_close($stmt);
+
+            // 3) Generate ONE unique id from insert_id (Same logic as frontend)
+            $yearSuffix = date('y');
+            $uniqueId   = 'APAPU' . $yearSuffix . str_pad($userId, 3, '0', STR_PAD_LEFT);
+
+            // 4) Assign ONLY delegate_id (Unique ID yahan jayegi, delegate_number me nahi)
+            $stmt = mysqli_prepare($db, "UPDATE registered_users SET delegate_id=? WHERE student_id=?");
+            mysqli_stmt_bind_param($stmt, "si", $uniqueId, $userId);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
 
             $catName = '';
             foreach ($categories as $c) {
@@ -228,10 +303,9 @@ if (isset($_POST['submit_user'])) {
                     break;
                 }
             }
-            $ref = 'REG-' . date('Ym') . '-' . random_int(1000, 9999);
             $currencyVal = $basePrice['currency'] ?? 'INR';
 
-            // Insert registration (18 placeholders)
+            // 5) Insert registration using the SAME unique id as registration_ref
             $stmt = mysqli_prepare($db, "INSERT INTO registrations
                 (registration_ref, user_id, category_id, category_name, period_id, period_name,
                  original_fee, currency, option_id, option_name, option_amount,
@@ -240,8 +314,8 @@ if (isset($_POST['submit_user'])) {
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'pending')");
             mysqli_stmt_bind_param(
                 $stmt,
-                "siisisdsdsdsdsdddd", // FIXED: period_name is 's', original_fee is 'd'
-                $ref,
+                "siisisdsdsdsdsdddd",
+                $uniqueId,
                 $userId,
                 $categoryId,
                 $catName,
@@ -261,10 +335,31 @@ if (isset($_POST['submit_user'])) {
                 $payable
             );
             mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+
             mysqli_commit($db);
 
-            $msg = "<div class='alert alert-success'>User added — Ref <strong>$ref</strong>, Payable <strong>"
-                . rp_money($payable, $currencyVal) . "</strong></div>";
+            // 6) WhatsApp — send the same unique id
+            $activeEvent = mysqli_fetch_assoc(mysqli_query($db, "SELECT * FROM event_settings LIMIT 1"));
+            $confName   = $activeEvent['event_name'] ?? 'Annual Conference';
+            $eventVenue = $activeEvent['event_venue'] ?? 'Venue TBA';
+            if (!empty($activeEvent['start_date']) && !empty($activeEvent['end_date']) && $activeEvent['start_date'] === $activeEvent['end_date']) {
+                $eventDate = date('d F Y', strtotime($activeEvent['start_date']));
+            } elseif (!empty($activeEvent['start_date']) && !empty($activeEvent['end_date'])) {
+                $eventDate = date('d M Y', strtotime($activeEvent['start_date'])) . ' - ' . date('d M Y', strtotime($activeEvent['end_date']));
+            } else {
+                $eventDate = 'TBA';
+            }
+            sendWatiWhatsAppTemplate($dialCodeVal, $contact, $firstName, $uniqueId, $payable, $currencyVal, $eventDate, $eventVenue, $confName);
+
+            $_SESSION['msg'] = "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+                <strong><i class='feather icon-check'></i> Success!</strong> User added successfully — Ref: <strong>{$uniqueId}</strong>.
+                <br><small class='text-muted'>✅ A confirmation WhatsApp has been sent.</small>
+                <button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+            </div>";
+
+            header("Location: manage-registrations.php");
+            exit;
         } catch (Exception $e) {
             mysqli_rollback($db);
             $msg = "<div class='alert alert-danger'>" . $e->getMessage() . "</div>";
@@ -301,6 +396,7 @@ $v = function ($k, $d = '') {
             display: none;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
 </head>
 
 <body>
@@ -386,11 +482,10 @@ $v = function ($k, $d = '') {
                                     </div>
 
                                     <div class="col-xl-4">
-                                        <div class="form-group"><label class="form-label">Mobile <span class="red-text">(*)</span></label>
-                                            <div class="input-group"><select name="dial_code" class="form-control" style="max-width:90px">
-                                                    <?php foreach (['+91', '+1', '+44', '+971'] as $d): ?><option <?= ($old['dial_code'] ?? '+91') === $d ? 'selected' : '' ?>><?= $d ?></option><?php endforeach; ?></select>
-                                                <input name="contact_number" class="form-control" value="<?= $v('contact_number') ?>" required>
-                                            </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Mobile <span class="red-text">(*)</span></label>
+                                            <input type="tel" name="contact_number" id="contact_number" class="form-control" value="<?= $v('contact_number') ?>" required>
+                                            <input type="hidden" name="dial_code" id="hidden_dial_code" value="<?= $old['dial_code'] ?? '+91' ?>">
                                         </div>
                                     </div>
 
@@ -438,7 +533,6 @@ $v = function ($k, $d = '') {
                                         </div>
                                     </div>
 
-                                    <!-- Registration Category: data-* flags drive instant section toggling -->
                                     <div class="col-xl-12">
                                         <div class="form-group">
                                             <label class="form-label">Registration Category <span class="red-text">(*)</span></label><br>
@@ -453,7 +547,6 @@ $v = function ($k, $d = '') {
                                         </div>
                                     </div>
 
-                                    <!-- EFI membership (shown only for EFI category) -->
                                     <div class="col-xl-6" id="efiBox" style="display:none">
                                         <div class="form-group"><label class="form-label">Membership Number <span class="red-text">*</span></label>
                                             <input name="membership_number" class="form-control" value="<?= $v('membership_number') ?>">
@@ -461,7 +554,6 @@ $v = function ($k, $d = '') {
                                         </div>
                                     </div>
 
-                                    <!-- Workshop section (shown once a category is picked) -->
                                     <div class="col-xl-12" id="workshopBox" style="display:none">
                                         <div class="form-group">
                                             <label class="form-label">Want To Register for Pre Conference CME/Workshops? <span class="red-text">*</span></label><br>
@@ -475,7 +567,6 @@ $v = function ($k, $d = '') {
                                         </div>
                                     </div>
 
-                                    <!-- Children of each parent, pre-rendered and toggled instantly -->
                                     <?php foreach ($parentWorkshops as $pw): ?>
                                         <div class="col-xl-12 ws-children" id="wsChildren_<?= $pw['id'] ?>">
                                             <div class="form-group">
@@ -492,7 +583,6 @@ $v = function ($k, $d = '') {
                                         </div>
                                     <?php endforeach; ?>
 
-                                    <!-- Accommodation (shown only for student categories) -->
                                     <div class="col-xl-12" id="accomBox" style="display:none">
                                         <div class="form-group">
                                             <label class="form-label">Want To Register for Accommodation? <span class="red-text">*</span></label><br>
@@ -525,8 +615,7 @@ $v = function ($k, $d = '') {
                                         </div>
                                     </div>
 
-                                    <div class="col-xl-12"><button type="submit" name="submit_user" class="btn btn-primary">
-                                            <i class="feather icon-save"></i> Submit</button></div>
+                                    <div class="col-xl-12"><button type="submit" name="submit_user" class="btn btn-primary"><i class="feather icon-save"></i> Submit</button></div>
                                 </div>
                             </form>
                         </div>
@@ -536,12 +625,42 @@ $v = function ($k, $d = '') {
         </div>
     </section>
 
+    <!-- intl-tel-input Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
     <script src="assets/js/vendor-all.min.js"></script>
     <script src="assets/js/plugins/bootstrap.min.js"></script>
     <script src="assets/js/pcoded.min.js"></script>
+
     <script>
-        // Pure visibility toggling only — no data is filled or modified by JS.
-        // Server re-validates everything on submit.
+        // 1. Initialize Phone Input Library
+        var input = document.querySelector("#contact_number");
+        var iti = window.intlTelInput(input, {
+            initialCountry: "in",
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+            separateDialCode: true,
+            preferredCountries: ["in", "us", "gb", "ae"]
+        });
+
+        // Restore previous country selection if form had errors
+        <?php if (!empty($old['dial_code'])): ?>
+            var oldDial = "<?= $old['dial_code'] ?>";
+            var countryData = iti.getCountryData();
+            var matched = countryData.find(c => "+" + c.dialCode === oldDial);
+            if (matched) {
+                iti.setCountry(matched.iso2);
+            }
+        <?php endif; ?>
+
+        // 2. On Form Submit: Format and split number for backend compatibility
+        document.getElementById('userForm').addEventListener('submit', function() {
+            var nationalNumber = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL);
+            document.querySelector('input[name="contact_number"]').value = nationalNumber.replace(/\D/g, '');
+            var countryCode = iti.getSelectedCountryData().dialCode;
+            document.getElementById('hidden_dial_code').value = '+' + countryCode;
+        });
+
+        // 3. Existing Visibility Toggling Logic
         function toggleSections() {
             var cat = document.querySelector('input[name="category_id"]:checked');
             var workshopBox = document.getElementById('workshopBox');
@@ -555,14 +674,9 @@ $v = function ($k, $d = '') {
                 hideAllChildren();
                 return;
             }
-
-            // Workshops apply to every category
             workshopBox.style.display = 'block';
-
-            // Category-specific extras
             efiBox.style.display = cat.dataset.efi === '1' ? 'block' : 'none';
             accomBox.style.display = cat.dataset.student === '1' ? 'block' : 'none';
-
             showChildrenForSelectedParent();
         }
 
@@ -576,7 +690,6 @@ $v = function ($k, $d = '') {
             var parent = document.querySelector('input[name="workshop_parent_id"]:checked');
             hideAllChildren();
             if (!parent || parent.value === '0') {
-                // Clear any child selection that is no longer visible
                 document.querySelectorAll('.ws-children input[type="radio"]').forEach(function(r) {
                     r.checked = false;
                 });
@@ -591,15 +704,12 @@ $v = function ($k, $d = '') {
         });
         document.querySelectorAll('input[name="workshop_parent_id"]').forEach(function(r) {
             r.addEventListener('change', function() {
-                // Deselect child when switching parent
                 document.querySelectorAll('.ws-children input[type="radio"]').forEach(function(x) {
                     x.checked = false;
                 });
                 showChildrenForSelectedParent();
             });
         });
-
-        // Restore state on load (after a validation-error re-render)
         toggleSections();
     </script>
 </body>

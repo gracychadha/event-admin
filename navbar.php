@@ -695,6 +695,7 @@ if ($adminId) {
                 <?php if (
                     $isAdmin ||
                     in_array('General Settings', $permissions) ||
+                    in_array('Event Settings', $permissions) ||
                     in_array('Website Settings', $permissions) ||
                     in_array('System Settings', $permissions) ||
                     in_array('Financial Settings', $permissions) ||
@@ -708,6 +709,9 @@ if ($adminId) {
                         <ul class="pcoded-submenu">
                             <?php if ($isAdmin || in_array('General Settings', $permissions) || in_array('All', $permissions)): ?>
                                 <li><a href="profile.php">General Settings</a></li>
+                            <?php endif; ?>
+                            <?php if ($isAdmin || in_array('Event Settings', $permissions) || in_array('All', $permissions)): ?>
+                                <li><a href="event-settings.php">Event Settings</a></li>
                             <?php endif; ?>
 
                             <?php if ($isAdmin || in_array('System Settings', $permissions) || in_array('All', $permissions)): ?>

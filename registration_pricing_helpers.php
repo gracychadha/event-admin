@@ -1,4 +1,4 @@
-<?php
+Price Breakdown (Frozen Snapshot)<?php
 /**
  * Registration Pricing Helpers (admin side)
  *

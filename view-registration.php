@@ -145,7 +145,8 @@ $favicon = $settings['favicon'];
 
                                 <div class="col-xl-6 col-lg-12">
                                     <h6 class="m-b-15"><i class="feather icon-dollar-sign"></i> Price Breakdown (Frozen Snapshot)</h6>
-                                    <table class="table table-bordered breakdown-table">
+                                    <div class="table-responsive">
+ <table class="table table-bordered breakdown-table">
                                         <tr><td>Original Registration Fee</td><td class="text-right"><?php echo rp_money($registration['original_fee'], $registration['currency']); ?></td></tr>
                                         <?php if ((float) $registration['option_amount'] > 0): ?>
                                             <tr><td>Add-on: <?php echo htmlspecialchars($registration['option_name'] ?? ''); ?></td><td class="text-right"><?php echo rp_money($registration['option_amount'], $registration['currency']); ?></td></tr>
@@ -157,6 +158,8 @@ $favicon = $settings['favicon'];
                                         <tr><td>GST (<?php echo ucfirst($registration['gst_type']); ?><?php echo ($registration['gst_percentage'] > 0 ? ' ' . rtrim(rtrim($registration['gst_percentage'], '0'), '.') . '%' : ''); ?>)</td><td class="text-right"><?php echo rp_money($registration['gst_amount'], $registration['currency']); ?></td></tr>
                                         <tr class="font-weight-bold"><td>Final Payable Amount</td><td class="text-right"><?php echo rp_money($registration['payable_amount'], $registration['currency']); ?></td></tr>
                                     </table>
+                                    </div>
+                                   
                                     <p class="text-muted"><small>These amounts are snapshots captured at registration time and never change, even if the pricing configuration is edited later.</small></p>
                                 </div>
                             </div>

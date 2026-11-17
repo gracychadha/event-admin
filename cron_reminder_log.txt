@@ -1,0 +1,31 @@
+
+========== 2026-11-16 06:50:54 ==========
+Event found for tomorrow: Apapu 2026
+Sending to: test (07837575742) - Ref: APAP26001 ... SUCCESS
+Sending to: hi (07837575742) - Ref: APAP26002 ... SUCCESS
+Sending to: Shweta (07837575742) - Ref: APAP26003 ... SUCCESS
+Sending to: Gracy (09518257449) - Ref: APAP26004 ... SUCCESS
+Sending to: Dalip (09592806528) - Ref: APAP26005 ... SUCCESS
+Total Processed: 5 | Successful: 5
+
+========== 2026-11-16 06:57:49 ==========
+Event found for tomorrow: Apapu 2026
+Sending to: test (07837575742) - Ref: APAP26001 ... SUCCESS
+Sending to: hi (07837575742) - Ref: APAP26002 ... SUCCESS
+Sending to: Shweta (07837575742) - Ref: APAP26003 ... SUCCESS
+Sending to: Gracy (09518257449) - Ref: APAP26004 ... SUCCESS
+Sending to: Dalip (09592806528) - Ref: APAP26005 ... SUCCESS
+Total Processed: 5 | Successful: 5
+
+========== 2026-11-16 07:01:10 ==========
+Event found for tomorrow: Apapu 2026
+[1] Sending to: test (07837575742) - Ref: APAP26001 ... SUCCESS (reminder_sent_at updated)
+[2] Sending to: hi (07837575742) - Ref: APAP26002 ... SUCCESS (reminder_sent_at updated)
+[3] Sending to: Shweta (07837575742) - Ref: APAP26003 ... SUCCESS (reminder_sent_at updated)
+[4] Sending to: Gracy (09518257449) - Ref: APAP26004 ... SUCCESS (reminder_sent_at updated)
+[5] Sending to: Dalip (09592806528) - Ref: APAP26005 ... SUCCESS (reminder_sent_at updated)
+Total Processed: 5 | Successful: 5 | Failed: 0
+
+========== 2026-11-16 07:07:35 ==========
+Event found for tomorrow: Apapu 2026
+Total Processed: 0 | Successful: 0 | Failed: 0
